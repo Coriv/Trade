@@ -21,6 +21,7 @@ public class TradeDto {
     private BigDecimal quantity;
     private BigDecimal price;
     private BigDecimal value;
+    private boolean open;
     private LocalDateTime openDate;
     private LocalDateTime closeDate;
     @NotNull

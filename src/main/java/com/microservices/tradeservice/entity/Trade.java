@@ -30,6 +30,8 @@ public class Trade {
     @PositiveOrZero
     private BigDecimal value;
 
+    private boolean open = true;
+
     @PastOrPresent
     @Column(updatable = false)
     private LocalDateTime openDate;

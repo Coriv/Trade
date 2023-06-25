@@ -16,6 +16,7 @@ public class TradeMapper {
                 .quantity(trade.getQuantity())
                 .price(trade.getPrice())
                 .value(trade.getQuantity().multiply(trade.getPrice()))
+                .open(trade.isOpen())
                 .openDate(trade.getOpenDate())
                 .closeDate(trade.getCloseDate())
                 .cryptoSymbol(trade.getCryptoSymbol())
