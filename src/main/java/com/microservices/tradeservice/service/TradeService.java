@@ -1,16 +1,16 @@
 package com.microservices.tradeservice.service;
 
-import com.microservices.tradeservice.config.UrlConfig;
 import com.microservices.tradeservice.dto.CreateTradeDto;
 import com.microservices.tradeservice.dto.TradeDealDto;
 import com.microservices.tradeservice.entity.Trade;
 import com.microservices.tradeservice.exception.NotEnoughFoundsException;
 import com.microservices.tradeservice.exception.TradeNotFoundException;
 import com.microservices.tradeservice.exception.TradeWithYourselfException;
+import com.microservices.tradeservice.feignClient.WalletClient;
+import com.microservices.tradeservice.feignClient.WalletCryptoClient;
 import com.microservices.tradeservice.repository.TradeDao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -22,10 +22,10 @@ import java.util.stream.Collectors;
 public class TradeService {
 
     private final TradeDao tradeDao;
-    private final RestTemplate restTemplate;
-    private final UrlConfig urlConfig;
+    private final WalletClient walletClient;
+    private final WalletCryptoClient walletCryptoClient;
 
-    public List<Trade> findOpenTrades(String symbol) {
+    public List<Trade> findOpenTradesOptionalBySymbol(String symbol) {
         List<Trade> trades = tradeDao.findAllByOpenIsTrue();
         if (symbol != null) {
             trades = trades.stream()
@@ -43,6 +43,15 @@ public class TradeService {
                     .collect(Collectors.toList());
         }
         return trades;
+    }
+
+    public Trade validateAndCreateTrade(CreateTradeDto createTradeDto) {
+        validateTrade(createTradeDto);
+        return createNewTrade(createTradeDto);
+    }
+
+    private void validateTrade(CreateTradeDto createTradeDto) {
+        walletCryptoClient.updateWalletAndCheckFounds(createTradeDto);
     }
 
     public Trade createNewTrade(CreateTradeDto createTradeDto) {
@@ -95,11 +104,10 @@ public class TradeService {
                 .quantity(value)
                 .symbol("$ USD")
                 .build();
-        //todo consider asynchronous communication here
-        restTemplate.put(urlConfig.getWalletDepositUrl(), dto);
+        walletClient.updateUserWallet(dto);
     }
 
-    private void updateCryptoWallet(TradeDealDto tradeDealDto) {
-        restTemplate.put(urlConfig.getWalletCryptoDepositUrl(), tradeDealDto);
+    private void updateCryptoWallet(TradeDealDto dto) {
+        walletCryptoClient.updateUserCashWallet(dto);
     }
 }

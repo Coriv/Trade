@@ -27,7 +27,7 @@ public class TradeController {
     @GetMapping
     public ResponseEntity<List<TradeDto>> fetchOpenTradesOptionalBySymbol
             (@RequestParam(value = "symbol", required = false) String symbol) {
-        List<Trade> trades = tradeService.findOpenTrades(symbol);
+        List<Trade> trades = tradeService.findOpenTradesOptionalBySymbol(symbol);
         return ResponseEntity.ok(tradeMapper.mapToTradeDtoList(trades));
     }
 
@@ -41,7 +41,7 @@ public class TradeController {
 
     @PostMapping
     public ResponseEntity<TradeDto> createTrade(@Valid @RequestBody CreateTradeDto createTradeDto) {
-        var trade = tradeService.createNewTrade(createTradeDto);
+        var trade = tradeService.validateAndCreateTrade(createTradeDto);
         return ResponseEntity.ok(tradeMapper.mapToTradeDto(trade));
     }
 
